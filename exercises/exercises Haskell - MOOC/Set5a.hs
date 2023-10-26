@@ -398,6 +398,7 @@ decToBin n
     | otherwise = if (n `mod` 2) == 0 then (O (decToBin (n `div` 2))) else (I (decToBin (n `div` 2)))
 
 -- MOOC solutions
+-- https://www.perplexity.ai/search/explain-why-this-RUXx_hHwTmub8AomKBGsdA?s=c
 {-
 toBin :: Int -> Bin
 toBin n = toBin' n (O End)
@@ -417,3 +418,6 @@ toBin n = toBin' n (O End)
 --   where helper 0 = O
 --         helper _ = I
 -}
+
+-- the helper function returns a partial function, O _ for 0, I _ otherwise; the accumulator is added 
+-- to this function, O acc or I acc, and becomes the new accumulator.
