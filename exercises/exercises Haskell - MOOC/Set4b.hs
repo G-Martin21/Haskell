@@ -38,7 +38,8 @@ myMaximum [] = 0
 myMaximum (x:xs) = foldr maxHelper x xs
 
 maxHelper :: Int -> Int -> Int
-maxHelper numList acc = max numList acc
+-- maxHelper numList acc = max numList acc  -- My solution
+maxHelper = max
 
 ------------------------------------------------------------------------------
 -- Ex 3: compute the sum and length of a list with a fold. Define
@@ -61,7 +62,8 @@ slStart = (0, 0)
 slHelper :: Num a => a -> (a, Int) -> (a, Int)
 slHelper x (s, l) = (s + x, l + 1)
 
-
+-- slStart = (0,0)
+-- slHelper x (sum,cnt) = (sum+x,cnt+1)
 
 ------------------------------------------------------------------------------
 -- Ex 4: implement concat with a fold. Define concatHelper and
@@ -84,7 +86,8 @@ concatStart = []
 concatHelper :: [a] -> [a] -> [a]
 concatHelper x xs = x ++ xs
 
-
+-- concatStart = []
+-- concatHelper = (++)
 ------------------------------------------------------------------------------
 -- Ex 5: get all occurrences of the largest number in a list with a
 -- fold. Implement largestHelper so that the given definition of largest works.
@@ -122,6 +125,8 @@ myHead xs = foldr headHelper Nothing xs
 headHelper :: a -> Maybe a -> Maybe a 
 headHelper a acc = Just a
 
+-- headHelper x _ = Just x
+
 ------------------------------------------------------------------------------
 -- Ex 7: get the last element of a list with a fold. Define lasthelper
 -- so that the given definition of myLast works.
@@ -138,4 +143,8 @@ myLast xs = foldr lastHelper Nothing xs
 lastHelper :: a -> Maybe a -> Maybe a
 lastHelper a Nothing = Just a
 lastHelper _ acc = acc 
+
+-- lastHelper :: a -> Maybe a -> Maybe a
+-- lastHelper x Nothing = Just x
+-- lastHelper _ (Just x) = Just x
 
