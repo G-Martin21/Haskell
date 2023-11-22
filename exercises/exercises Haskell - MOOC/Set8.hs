@@ -137,6 +137,16 @@ dotAndLine = Picture f
   where f (Coord x y) | x==3 && y == 4 = white    -- white dot at (3,4)
                       | y==8 = pink               -- pink line at y = 8
                       | otherwise = black         -- rest of the picture is black
+
+{-
+Proposed solution
+
+dotAndLine :: Picture
+dotAndLine = Picture f
+  where f (Coord 3 4) = white
+        f (Coord _ 8) = pink
+        f _           = black
+-}
 ------------------------------------------------------------------------------
 
 ------------------------------------------------------------------------------
@@ -177,6 +187,17 @@ blendColor (Color x y z) (Color x' y' z') = Color mean1 mean2 mean3
 combine :: (Color -> Color -> Color) -> Picture -> Picture -> Picture
 combine f (Picture p1) (Picture p2) = Picture (\(Coord x y) -> f (p1 (Coord x y)) (p2 (Coord x y)))
 
+{- 
+proposed solution
+
+blendColor :: Color -> Color -> Color
+blendColor (Color r1 g1 b1) (Color r2 g2 b2) = Color (avg r1 r2) (avg g1 g2) (avg b1 b2)
+  where avg x y = div (x+y) 2
+
+combine :: (Color -> Color -> Color) -> Picture -> Picture -> Picture
+combine op (Picture f) (Picture g) = Picture h
+  where h coord = op (f coord) (g coord)
+-}
 ------------------------------------------------------------------------------
 
 -- Let's define blend, we'll use it later
@@ -257,6 +278,19 @@ union (Shape f) (Shape g) = Shape (\(Coord x y) -> f (Coord x y) || g (Coord x y
 
 cut :: Shape -> Shape -> Shape
 cut (Shape f) (Shape g) = Shape (\(Coord x y) -> f (Coord x y) && not (g (Coord x y)))
+
+
+{-
+Proposed solution, better expresions
+
+union :: Shape -> Shape -> Shape
+union (Shape f) (Shape g) = Shape h
+  where h coord = f coord || g coord
+
+cut :: Shape -> Shape -> Shape
+cut (Shape f) (Shape g) = Shape h
+  where h coord = f coord && not (g coord)
+-}
 ------------------------------------------------------------------------------
 
 -- Here's a snowman, built using union from circles and rectangles.
@@ -287,6 +321,12 @@ paintSolid :: Color -> Shape -> Picture -> Picture
 paintSolid color (Shape shape) (Picture base) = Picture (\(Coord x y) -> if shape (Coord x y) then color
                                                                          else base (Coord x y))
   
+{-
+paintSolid :: Color -> Shape -> Picture -> Picture
+paintSolid c (Shape f) (Picture g) = Picture h
+  where h coord | f coord = c
+                | otherwise = g coord
+-}
 ------------------------------------------------------------------------------
 
 allWhite :: Picture
@@ -333,6 +373,13 @@ stripes a b = Picture f
 paint :: Picture -> Shape -> Picture -> Picture
 paint (Picture pat) (Shape shape) (Picture base) = Picture (\(Coord x y) -> if shape (Coord x y) then pat (Coord x y)
                                                                          else base (Coord x y))
+
+{-
+paint :: Picture -> Shape -> Picture -> Picture
+paint (Picture pat) (Shape shape) (Picture base) = Picture f
+  where f coord | shape coord = pat coord
+                | otherwise = base coord
+-}                                                                         
 ------------------------------------------------------------------------------
 
 -- Here's a patterned version of the snowman example. See it by running:
@@ -477,6 +524,14 @@ averageColor colors = let
     n = length colors
   in Color (rSum `div` n) (gSum `div` n) (bSum `div` n)
 
+{-
+instance Transform Blur where
+  apply Blur (Picture f) = Picture g
+    where g c = avg (map f (neighbours c))
+          neighbours (Coord x y) = [Coord x y, Coord (x-1) y, Coord (x+1) y, Coord x (y-1), Coord x (y+1)]
+          avg colors = let n = length colors
+                       in Color (sum (map getRed colors) `div` n) (sum (map getGreen colors) `div` n) (sum (map getBlue colors) `div` n)
+-}
 ------------------------------------------------------------------------------
 
 ------------------------------------------------------------------------------
@@ -495,6 +550,12 @@ data BlurMany = BlurMany Int
 
 instance Transform BlurMany where
   apply (BlurMany n) p = foldr (\x acc -> apply Blur acc) p [1..n]
+
+{-
+instance Transform BlurMany where
+  apply (BlurMany 0) pic = pic
+  apply (BlurMany n) pic = apply (BlurMany (n-1)) (apply Blur pic)
+-}
 ------------------------------------------------------------------------------
 
 -- Here's a blurred version of our original snowman. See it by running
@@ -502,3 +563,13 @@ instance Transform BlurMany where
 
 blurredSnowman = apply (BlurMany 2) exampleSnowman
 
+main = do
+  render examplePicture1 400 300 "example1.png"
+  render exampleCircle 400 300 "circle.png"
+  render exampleSnowman 400 300 "snowman.png"
+  render exampleColorful 400 300 "colorful.png"
+  render examplePatterns 400 300 "patterns.png"
+  render largeVerticalStripes 400 300 "large-stripes.png"
+  render largeVerticalStripes2 400 300 "large-stripes2.png"
+  render checkered 400 300 "checkered.png"
+  render blurredSnowman 400 300 "blurred.png"
